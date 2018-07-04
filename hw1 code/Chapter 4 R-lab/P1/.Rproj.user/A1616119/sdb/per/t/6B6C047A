@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# Chapter 4 R-lab\ndata(EuStockMarkets)\nmode(EuStockMarkets)\nclass(EuStockMarkets)\nplot(EuStockMarkets)\n\n# Problem 1\npdf(\"EuStocks.pdf\", width = 6, height = 5)\nplot(EuStockMarkets)\ngraphics.off()\n\n# Problem 2\nlogR = diff(log(EuStockMarkets))\nplot(logR)\n\n# Problem 3\nplot(as.data.frame(logR))\nindex.names = dimnames(logR)[[2]]\npar(mfrow=c(2,2))\nfor(i in 1:4)\n{\n  qqnorm(logR[,i],datax=T,main=index.names[i])\n  qqline(logR[,i],datax=T)\n  print(shapiro.test(logR[,i]))\n}\n\nshapiro.test(logR[,1]) # DAX\nshapiro.test(logR[,2]) # SMI\nshapiro.test(logR[,3]) # CAC\nshapiro.test(logR[,4]) # FTSE\n\n# Problem 4\nn=dim(logR)[1]\nq.grid = (1:n)/(n+1)\ndf=c(1,4,6,10,20,30)\nfor(i in 1:4)\n{\n  windows()\n  par(mfrow=c(3,2))\n  for(j in 1:6)\n  {\n    qqplot(logR[,i], qt(q.grid,df=df[j]),\n           main=paste(index.names[i], \", df=\", df[j]) )\n    abline(lm(qt(c(.25,.75),df=df[j])~quantile(logR[,i],c(.25,.75))))\n  } \n}\n\n# Problem 6\nlibrary(\"fGarch\")\nx = seq(-.1,.1,by=.001)\npar(mfrow=c(1,1))\nplot(density(logR[,1]),lwd=2,ylim=c(0,60))\nlines(x,dstd(x,mean=median(logR[,1]),sd=mad(logR[,1]),nu=5),lty=5,lwd=2)\nlines(x,dnorm(x,mean=mean(logR[,1]),sd=sd(logR[,1])),lty=3,lwd=4)\nlegend(\"topleft\",c(\"KDE\",\"t: df=5\",\"normal\"),lwd=c(2,2,4),lty=c(1,5,3))\n\n# zoom in the left tail\nplot(density(logR[,1]),lwd=2,ylim=c(0,30),xlim=c(-0.05,-0.01))\nlines(x,dstd(x,mean=median(logR[,1]),sd=mad(logR[,1]),nu=5),lty=5,lwd=2)\nlines(x,dnorm(x,mean=mean(logR[,1]),sd=sd(logR[,1])),lty=3,lwd=4)\nlegend(\"topleft\",c(\"KDE\",\"t: df=5\",\"normal\"),lwd=c(2,2,4),lty=c(1,5,3))\n\n# zoom in the right tail\nplot(density(logR[,1]),lwd=2,ylim=c(0,30),xlim=c(0.01,0.05))\nlines(x,dstd(x,mean=median(logR[,1]),sd=mad(logR[,1]),nu=5),lty=5,lwd=2)\nlines(x,dnorm(x,mean=mean(logR[,1]),sd=sd(logR[,1])),lty=3,lwd=4)\nlegend(\"topright\",c(\"KDE\",\"t: df=5\",\"normal\"),lwd=c(2,2,4),lty=c(1,5,3))\n\n# adjust the smooth\nplot(density(logR[,1],adjust=3),lwd=2,ylim=c(0,60))\nlines(x,dstd(x,mean=median(logR[,1]),sd=mad(logR[,1]),nu=5),lty=5,lwd=2)\nlines(x,dnorm(x,mean=mean(logR[,1]),sd=sd(logR[,1])),lty=3,lwd=4)\nlegend(\"topleft\",c(\"KDE\",\"t: df=5\",\"normal\"),lwd=c(2,2,4),lty=c(1,5,3))\n",
+    "created" : 1501599629663.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "570092547",
+    "id" : "6B6C047A",
+    "lastKnownWriteTime" : 1501610670,
+    "last_content_update" : 1501610670273,
+    "path" : "~/Documents/Baruch/Refresher Seminars/Statistics/Chapter 4 R-lab/P1/P1.R",
+    "project_path" : "P1.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

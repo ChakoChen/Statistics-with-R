@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "# Chapter 7-R lab\n\n# Problem 1\n# \nberndtInvest = read.csv(\"berndtInvest.csv\")\nBerndt = as.matrix(berndtInvest[, 2:5])\nC = cov(Berndt)\ncor(Berndt)\npairs(Berndt)\n\nw = matrix( c(0.5,0.3,0.2,0) )\nS = as.matrix(cov(Berndt))\n\nt(w) %*% (S %*% w) # computes teh variance of the linear combination\n\n# Problem 2\n#\nsource('ml_fit_multivariate_t.R')\nresult = ml_fit_multivariate_t(Berndt)\ndf = result$df_range           # extract results ... \nmax_index = result$max_index\nloglik = result$logliks\n\nif( FALSE ){\n  # Compute the derivative of the loglikelihood from the discrete samples evaluated above \n  #\n  h = df[2]-df[1] \n  d2_LL_nu2 = ( loglik[max_index+1] - 2*loglik[max_index] + loglik[max_index-1] ) / h^2 \n}else{\n  # Use the function fdHess in the nlme package to numerically evaluate the derivive of the loglikelihood:\n  #\n  library(nlme)\n  res = fdHess( df[max_index], function (x) loglik_fn(Berndt,x) )\n  d2_LL_nu2 = res$Hessian \n}\n\ns_nu = sqrt( 1/(-d2_LL_nu2) ) # the standard error in nu \n\nalpha = 0.10\nz_crit = qnorm( 1-0.5*alpha ) \n\nplot( df, loglik, type=\"l\", cex.axis=1.5, cex.lab=1.5, ylab=\"loglikelihood\", lwd=2 )\nabline(h = max(loglik))\nabline(v = df[max_index] - z_crit * s_nu)\nabline(v = df[max_index] + z_crit * s_nu)\ngrid()\n\n# Problem 3\n#\nlibrary(MASS)\n\npar(mfrow=c(1,4))\nN = 2500\nnu = 3\n\nset.seed(5640)\ncov = matrix(c(1,0.8,0.8,1),nrow=2)\nX = mvrnorm(N, mu=c(0,0), Sigma=cov)\nw = sqrt(nu/rchisq(N,df=nu))\nX = X * cbind(w,w) \nplot(X,main=\"(a)\")\n\nset.seed(5640)\ncov = matrix(c(1,0.8,0.8,1),nrow=2)\nX = mvrnorm(N, mu=c(0,0), Sigma=cov)\nw1 = sqrt(nu/rchisq(N,df=nu))\nw2 = sqrt(nu/rchisq(N,df=nu))\nX = X * cbind(w1,w2) \nplot(X,main=\"(b)\")\n\nset.seed(5640)\ncov = matrix(c(1,0,0,1),nrow=2)\nX = mvrnorm(N, mu=c(0,0), Sigma=cov)\nw1 = sqrt(nu/rchisq(N,df=nu))\nw2 = sqrt(nu/rchisq(N,df=nu))\nX = X * cbind(w1,w2) \nplot(X,main=\"(c)\")\n\nset.seed(5640)\ncov = matrix(c(1,0,0,1),nrow=2)\nX = mvrnorm(N, mu=c(0,0), Sigma=cov)\nw = sqrt(nu/rchisq(N,df=nu))\nX = X * cbind(w,w) \nplot(X,main=\"(d)\")\n\n# Problem 6\n#\n# Generate data for R (a one-dimensional projection of two dimensional t data) \n#\nalpha = 0.01 \n\nm = c(0.001,0.002) \nSgma = matrix( data=c( 0.1, 0.03, 0.03, 0.15 ), nrow=2, ncol=2, byrow=T )\ndf = 5\n\nw = c(1/2,1/2)\n\nnSamples = 10000\n\nX = rmt( nSamples, m, S=Sgma )\nRs = X %*% w\n\nq = quantile( Rs, 1-alpha ) # the 99% point\ninds = Rs >= q\nprint( sprintf( \"Using N= %10d has a mean of upper %10.6f quantile of= %10.6f\", nSamples, 1-alpha, mean( Rs[inds] ) ) )\n\n\n# Problem 7\n#\nlibrary(mnormt)\ndata(CRSPday,package=\"Ecdat\")\nY = CRSPday[,c(5,7)]\nloglik = function(par){\n  mu = par[1:2]\n  A = matrix( c(par[3],par[4],0,par[5]), nrow=2, byrow=T )\n  scale_matrix = t(A) %*% A\n  df = par[6]\n  f = -sum(log(dmt(Y,mean=mu,S=scale_matrix,df=df)))\n  f\n}\nA = chol(cov(Y))\nstart = as.vector( c(apply(Y,2,mean),A[1,1],A[1,2],A[2,2],4) )\nfit_mvt = optim( start, loglik, method=\"L-BFGS-B\", lower=c(-0.02,-0.02,-0.1,-0.1,-0.1,2), upper=c(+0.02,+0.02,+0.1,+0.1,+0.1,15), hessian=T )\nprint(fit_mvt) \n\nfit_mvt$par\nfit_mvt$hessian\n\n# Compute the inverse of the negative sample based Fisher information matrix using \"solve\" \ninv_fisher = solve( fit_mvt$hessian, diag(length(fit_mvt$par)) )\n\n# Extract the diagonal values and take the square root:\nsqrt( diag(inv_fisher) )\n\npar = fit_mvt$par\nA = matrix( c(par[3],par[4],0,par[5]), nrow=2, byrow=T )\ncov_matrix = t(A) %*% A\n\nD = diag( c( sqrt( cov_matrix[1,1] ), sqrt( cov_matrix[2,2] ) ) )\nDInv = solve( D, diag(2) )\n\ncor_matrix = DInv %*% ( cov_matrix %*% DInv )\n\n",
+    "created" : 1502067897996.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1331734514",
+    "id" : "397B98D6",
+    "lastKnownWriteTime" : 1502119617,
+    "last_content_update" : 1502119617050,
+    "path" : "~/Documents/Baruch/Refresher Seminars/Statistics/Chapter 7 R-lab/P1/P1.R",
+    "project_path" : "P1.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
